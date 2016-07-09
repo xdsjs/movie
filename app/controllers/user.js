@@ -1,6 +1,7 @@
 // user相关
 var User = require('../models/user')
 
+// 注册
 exports.signup = function (req, res) {
   var _user = req.body.user
 
@@ -10,14 +11,15 @@ exports.signup = function (req, res) {
     }
     if (user.length !== 0) {
       console.log('该用户已存在!');
-      return res.redirect('/')
+      return res.redirect('/user/showsignin')
     }else {
       var user = new User(_user)
       user.save(function (err, user) {
         if (err) {
           console.log(err);
         }
-        res.redirect('/admin/userlist')
+        console.log('注册成功');
+        res.redirect('/user/showsignin')
       })
     }
   })
@@ -34,7 +36,7 @@ exports.signin = function (req, res) {
       console.log(err);
     }
     if (!user) {
-      return res.redirect('/')
+      return res.redirect('/user/showsignup')
     }else {
       user.comparePassword(password, function (err, isMatched) {
         if (err) {
@@ -42,13 +44,28 @@ exports.signin = function (req, res) {
         }
         if (isMatched) {
           req.session.user = user
-          console.log('password is matched:)');
           res.redirect('/')
+          console.log('password is matched:)');
         }else {
-          console.log('password is not matched:()');
+          res.redirect('/user/showsignin')
+          console.log('password is not matched:(');
         }
       })
     }
+  })
+}
+
+// 注册页面
+exports.showsignup = function (req, res) {
+  res.render('signup', {
+    title: '注册页面'
+  })
+}
+
+// 登陆页面
+exports.showsignin = function (req, res) {
+  res.render('signin', {
+    title: '登陆页面'
   })
 }
 
@@ -70,4 +87,24 @@ exports.list =　function (req, res) {
       movies: users
     })
   })
+}
+
+// 中间件－用户登录
+exports.signinRequired = function (req, res, next) {
+  var _user = req.session.user
+
+  if (!_user) {
+    return res.redirect('/user/showsignin')
+  }
+
+  next()
+}
+
+// 中间件－管理员
+exports.adminRequired = function (req, res, next) {
+  var _user = req.session.user
+  if (_user.role <= 10) {
+    return res.redirect('/user/showsignin')
+  }
+  next()
 }

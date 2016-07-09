@@ -12,6 +12,11 @@ var UserSchema = new mongoose.Schema({
     unique: true,
     type: String
   },
+  // 角色权限 0-normal 1-ver 2-pro >10-admin >50-super
+  role: {
+    type: Number,
+    default: 0
+  },
   meta: {
     createAt: {
       type: Date,
